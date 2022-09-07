@@ -1,14 +1,17 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import csv
+import os
 
 # Import most common words in English
 with open('common_words_english.csv', newline='') as f:
     reader = csv.reader(f)
     common_words_english = [word[0].strip() for word in list(reader)][:500]
 
-
-chrome = webdriver.Chrome("./chromedriver")
+if os.name == 'nt':
+    chrome = webdriver.Chrome("./chromedriver.exe")
+else:
+    chrome = webdriver.Chrome("./chromedriver")
 chrome.get("https://th.jobsdb.com/th/search-jobs/python/1")
 
 collected_words = []
@@ -45,5 +48,6 @@ while True:
 # import re
 
 # s = re.sub('[^0-9a-zA-Z]+', '*', s)
+
 
 
