@@ -12,7 +12,7 @@ with open('common_words_english.csv', newline='') as f:
 # Import words to ignore
 with open('words_to_ignore.csv', newline='') as f:
     reader = csv.reader(f)
-    words_to_ignore = [word[0].strip() for word in list(reader)]
+    words_to_ignore = [word[0].strip() for word in list(reader)][1:]
 
 if os.name == 'nt':
     chrome = webdriver.Chrome("./chromedriver.exe")
@@ -63,19 +63,22 @@ while True:
         collected_words = []
         print('\n--- Saved! ---')
     elif cmd.lower() == 'i':
-        input("What words to ignore?\ni.e. word1, word2, word3")
+        words = [word.strip() for word in input("What words to ignore?\ni.e. word1, word2, word3\n-> ").split(',')]
+        words_to_ignore += [word for word in words if word not in words_to_ignore]
+        
+        # Save words to ignore to a csv
+        with open("words_to_ignore.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(['Word','Tag'])
+            for word in words_to_ignore:
+                writer.writerow([word,tag])
+
+        print("--- Ignoring {} ---".format(words))
+
     elif cmd.lower() == 't':
         tag = input("Please type the tag you want to use for your next saved words -> ")
     else:
         print("Command incorrect")
     print('\n')
-
-
-
-# Replace non alphabetic characters
-# import re
-
-# s = re.sub('[^0-9a-zA-Z]+', '', s)
-
 
 
