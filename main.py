@@ -5,6 +5,7 @@ import os
 import re
 
 # Import most common words in English
+# Dataset downloaded from https://www.kaggle.com/datasets/rtatman/english-word-frequency
 with open('common_words_english.csv', newline='') as f:
     reader = csv.reader(f)
     common_words_english = [word[0].strip() for word in list(reader)][:500]
@@ -14,14 +15,19 @@ with open('words_to_ignore.csv', newline='') as f:
     reader = csv.reader(f)
     words_to_ignore = [word[0].strip() for word in list(reader)][1:]
 
+# Import saved words
+with open('saved_words.csv', newline='') as f:
+    reader = csv.reader(f)
+    saved_words = [word for word in list(reader)][1:]    
+
 if os.name == 'nt':
     chrome = webdriver.Chrome("./chromedriver.exe")
 else:
     chrome = webdriver.Chrome("./chromedriver")
-chrome.get("https://th.jobsdb.com/th/search-jobs/python/1")
+chrome.get("https://th.jobsdb.com/th/en/job/data-scientist-advanced-analytics-300003002681842")
 
-collected_words = []
 tag = None
+words_count = []
 while True:
     if not tag:
         tag = input("Please type the tag you want to use for your next saved words -> ")
@@ -34,33 +40,36 @@ while True:
         break
     elif cmd.lower() == "" or cmd.lower() == "g":
         # Read all words from the website
-        words = chrome.find_element(By.TAG_NAME, "html").text.split()
+        words = chrome.find_element(By.TAG_NAME, "html").get_attribute("innerText").split()
+        # Remove not alphabetic characters
+        words = [(re.sub('[^a-zA-Z]+', '', word)) for word in words]
+        # Remove empty words
+        words = [word for word in words if len(word) > 2]
+        # Remove words from the most used words in English
+        words = [word.strip() for word in words if (not word.lower().strip() in common_words_english and not word.lower().strip() in words_to_ignore)]
+        # Count words occurrences
         words_count = []
         for word in words:
             words_count.append([word,words.count(word)])
-        # Sort by most common words in the website
-        words_count.sort(key=lambda x: x[1],reverse=True)
-        # Remove words from the most used words in English
-        words_count = [word for word in words_count if (word[0].lower() not in common_words_english and word[0].lower() not in words_to_ignore)]
-        # Remove not alphabetic characters
-        words_count = [[(re.sub('[^a-zA-Z]+', '', word[0])),word[1]] for word in words_count]
-        # Remove empty words
-        words_count = [word for word in words_count if len(word[0]) > 2]
         # Remove duplicates
-        words_count_no_dups = []
-        [words_count_no_dups.append([x[0].lower(),x[1]]) for x in words_count if [x[0].lower(),x[1]] not in words_count_no_dups]
+        words_no_dups = []
+        [words_no_dups.append([x[0].lower(),x[1]]) for x in words_count if [x[0].lower(),x[1]] not in words_no_dups]
+        # Sort by most common words in the website
+        words_no_dups.sort(key=lambda x: x[1],reverse=True)
         # Get only top 20 words
-        words_count = words_count_no_dups[:20]
-        collected_words += words_count
+        words_count = words_no_dups[:20]
         print('\n--- Top words ---\n')
         print(words_count)
     elif cmd.lower() == "s":
-        # Save collected words to a csv
-        with open("saved_words.csv", "a") as f:
+        # Save collected words to a csv        
+        saved_words += [word for word in words_count]# if word not in words_count] # need to only check first item (word)!!!
+
+        with open("saved_words.csv", "w") as f:
             writer = csv.writer(f)
-            for row in collected_words:
+            writer.writerow(['Word','Occurrences','Tag'])
+            for row in saved_words:
                 writer.writerow(row+[tag])
-        collected_words = []
+        words_count = []
         print('\n--- Saved! ---')
     elif cmd.lower() == 'i':
         words = [word.strip() for word in input("What words to ignore?\ni.e. word1, word2, word3\n-> ").split(',')]
@@ -74,6 +83,7 @@ while True:
                 writer.writerow([word,tag])
 
         print("--- Ignoring {} ---".format(words))
+        print(words_to_ignore)
 
     elif cmd.lower() == 't':
         tag = input("Please type the tag you want to use for your next saved words -> ")
@@ -82,3 +92,6 @@ while True:
     print('\n')
 
 
+
+
+# Need to sum occurrences if a same word with same tag is already in the file
