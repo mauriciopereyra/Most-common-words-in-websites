@@ -20,6 +20,7 @@ with open('saved_words.csv', newline='') as f:
     reader = csv.reader(f)
     saved_words = [word for word in list(reader)][1:]    
 
+# Check if OS is windows or linux
 if os.name == 'nt':
     chrome = webdriver.Chrome("./chromedriver.exe")
 else:
@@ -64,10 +65,7 @@ while True:
         # Save collected words to a csv and sum occurrences if already saved the same word and tag 
         for new_word in words_count:
             duplicated = False
-            print(saved_words)
             for saved_word in saved_words:
-                print(saved_word,"saved")
-                print(new_word,"new")
                 if saved_word[0] == new_word[0].lower() and saved_word[2].lower() == tag.lower():
                     saved_word[1] = int(saved_word[1]) + int(new_word[1])
                     duplicated = True
