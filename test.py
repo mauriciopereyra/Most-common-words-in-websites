@@ -1,0 +1,3 @@
+
+
+print(["rolo",'lolo']+["tag"])

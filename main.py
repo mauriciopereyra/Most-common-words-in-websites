@@ -33,7 +33,7 @@ while True:
         tag = input("Please type the tag you want to use for your next saved words -> ")
     print("Current tag is \"{}\"".format(tag))
 
-    cmd = input("---Commands---\nG - Get website words\nI - Ignore words\nS - Save\nQ - Quit\n")
+    cmd = input("---Commands---\nG - Get website words\nT - Change tag\nI - Ignore words\nS - Save\nQ - Quit\n")
     if cmd.lower() == "q":
         chrome.quit()
         print('\n--- Thanks! ---\n')
@@ -61,14 +61,26 @@ while True:
         print('\n--- Top words ---\n')
         print(words_count)
     elif cmd.lower() == "s":
-        # Save collected words to a csv        
-        saved_words += [word for word in words_count]# if word not in words_count] # need to only check first item (word)!!!
+        # Save collected words to a csv and sum occurrences if already saved the same word and tag 
+        for new_word in words_count:
+            duplicated = False
+            print(saved_words)
+            for saved_word in saved_words:
+                print(saved_word,"saved")
+                print(new_word,"new")
+                if saved_word[0] == new_word[0].lower() and saved_word[2].lower() == tag.lower():
+                    saved_word[1] = int(saved_word[1]) + int(new_word[1])
+                    duplicated = True
+                    break   
+                
+            # if not duplicated:
+            #     saved_words += new_word+[tag]
 
         with open("saved_words.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(['Word','Occurrences','Tag'])
             for row in saved_words:
-                writer.writerow(row+[tag])
+                writer.writerow(row[:2]+[tag])
         words_count = []
         print('\n--- Saved! ---')
     elif cmd.lower() == 'i':
@@ -90,8 +102,3 @@ while True:
     else:
         print("Command incorrect")
     print('\n')
-
-
-
-
-# Need to sum occurrences if a same word with same tag is already in the file
