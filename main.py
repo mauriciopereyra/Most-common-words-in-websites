@@ -72,9 +72,9 @@ while True:
                     saved_word[1] = int(saved_word[1]) + int(new_word[1])
                     duplicated = True
                     break   
-                
-            # if not duplicated:
-            #     saved_words += new_word+[tag]
+
+            if not duplicated:
+                saved_words.append(new_word+[tag])
 
         with open("saved_words.csv", "w") as f:
             writer = csv.writer(f)

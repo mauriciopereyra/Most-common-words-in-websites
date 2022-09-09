@@ -1,3 +1,3 @@
 
-
-print(["rolo",'lolo']+["tag"])
+lista = ["rolo",'lolo']
+print(lista+["tag"])
